@@ -57,6 +57,14 @@ Username: your_username
 Password: ******
 Login Succeeded
 ```
+#### Change the [.env](.env) file to run your DEMO
+```
+DEMO=loan-processing
+```
+#### Add connector secrets to the [connector-secrets.txt](connector-secrets.txt) file
+```shell
+SENDGRID_DEMO=some_secret_key
+```
 #### Run the environment also rerun this command if you make a change.
 ```shell
 $ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml -f docker-compose-demo.yaml up -d
