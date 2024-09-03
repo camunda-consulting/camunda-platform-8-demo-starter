@@ -28,8 +28,9 @@ The full environment contains these components:
 
 #### clone the project
 ```shell
-$ git clone https://github.com/camunda-consulting/camunda-demo-starter.git 
+$ git clone https://github.com/camunda/presales-demo-setup.git
 ```
+
 #### build the project in the local docker repo 
 ```shell
 $ docker build --build-arg DEMO=customer-onboarding -f demos.dockerfile -t camunda-consulting/executor .
@@ -45,6 +46,9 @@ $ git clone https://github.com/camunda-consulting/camunda-8-simu.git
 $ docker build --no-cache -f Dockerfile -t camunda-community/loader .
 ```
 ### To run Demo environment locally clone this repo and issue the following commands:
+```shell
+$ git clone https://github.com/camunda-consulting/camunda-demo-starter.git 
+```
 ```shell
 $ docker login registry.camunda.cloud
 ```
@@ -83,4 +87,4 @@ Go to [Keeper](https://keepersecurity.eu/vault/#) to get the API key that is use
 Please submit issue to this repos issue board
 
 ### Running on arm64 based hardware
-See the troubleshooting in the [README.md](README.md)
+See the troubleshooting in the [README.md](README.md#troubleshooting)
