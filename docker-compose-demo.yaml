@@ -1,0 +1,83 @@
+# While the Docker images themselves are supported for production usage,
+# this docker-compose.yaml is designed to be used by developers to run
+# an environment locally. It is not designed to be used in production.
+# We recommend to use Kubernetes in production with our Helm Charts:
+# https://docs.camunda.io/docs/self-managed/platform-deployment/kubernetes-helm/
+# For local development, we recommend using KIND instead of `docker-compose`:
+# https://docs.camunda.io/docs/self-managed/platform-deployment/helm-kubernetes/guides/local-kubernetes-cluster/
+
+# This is a full configuration with Zeebe, Operate, Tasklist, Optimize, Identity, Keycloak, and Elasticsearch
+# See docker-compose-core.yml for a lightweight configuration that does not include Optimize, Identity, and Keycloak.
+
+services:
+
+  zeebe:
+    extends:
+      file: docker-compose.yaml
+      service: zeebe
+    environment:
+      - ZEEBE_CLOCK_CONTROLLED=true
+
+  identity: # https://docs.camunda.io/docs/self-managed/platform-deployment/docker/#identity
+    extends:
+      file: docker-compose.yaml
+      service: identity
+    environment: # https://docs.camunda.io/docs/self-managed/identity/deployment/configuration-variables/
+      KEYCLOAK_CLIENTS_1_NAME: dataloader
+      KEYCLOAK_CLIENTS_1_ID: dataloader
+      KEYCLOAK_CLIENTS_1_SECRET: Tcx9kFqVwxlnWMZOhjYCemnLvBr1Gvs3
+      KEYCLOAK_CLIENTS_1_TYPE: M2M
+      KEYCLOAK_CLIENTS_1_PERMISSIONS_0_RESOURCE_SERVER_ID: operate-api
+      KEYCLOAK_CLIENTS_1_PERMISSIONS_0_DEFINITION: read:*
+      MULTITENANCY_ENABLED: ${MULTI_TENANCY_ENABLED}
+      RESOURCE_PERMISSIONS_ENABLED: ${RESOURCE_AUTHORIZATIONS_ENABLED}
+
+  loader:
+    image: camunda-community/loader
+    container_name: loader
+    ports:
+      - 8080:8080
+    environment:
+      TIMERS_FROM: exporter
+      ZEEBE_CLIENT_BROKER_GATEWAY-ADDRESS: zeebe:26500
+      ZEEBE_CLIENT_SECURITY_PLAINTEXT: true
+      GATEWAY_ACTUATOR: http://zeebe:9600/actuator
+      OPERATE_SELFMANAGED_CLIENT-ID: dataloader
+      OPERATE_SELFMANAGED_CLIENT-SECRET: Tcx9kFqVwxlnWMZOhjYCemnLvBr1Gvs3
+      OPERATE_SELFMANAGED_KEYCLOAK-URL: http://keycloak:8080
+      OPERATE_SELFMANAGED_URL: http://operate:8080/
+    volumes:
+      - loader:/usr/share/loader/data
+    networks:
+      - camunda-platform
+    depends_on:
+      - operate
+      - identity
+      - zeebe
+
+  executor:
+#    image: europe-north1-docker.pkg.dev/pre-sales-demo-setup/presales-demo/presales-demo-executor:latest
+    image: camunda-consulting/executor
+    container_name: executor
+    ports:
+      - 9090:8080
+    environment:
+      - ZEEBE_ADDRESS=http://zeebe:26500
+      - ZEEBE_REST_ADDRESS=http://zeebe:8080
+      - ZEEBE_AUTHORIZATION_SERVER_URL=http://keycloak:8080/auth/realms/camunda-platform/protocol/openid-connect/token
+      - K_URL=http://executor:8080
+      - DEMO=${DEMO}
+      - spring_profiles_active=localdev
+      - SPRING_PROFILES_ACTIVE=localdev
+      - CLIENT_CLOUD_CLIENT_ID=${ZEEBE_CLIENT_ID}
+      - CLIENT_CLOUD_CLIENT_SECRET=${ZEEBE_CLIENT_SECRET}
+    volumes:
+      - demo:/usr/share/demo/data
+    networks:
+      - camunda-platform
+    depends_on:
+      - zeebe
+
+volumes:
+  loader:
+  demo:
