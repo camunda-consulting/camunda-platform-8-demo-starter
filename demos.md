@@ -47,7 +47,7 @@ $ docker build --no-cache -f Dockerfile -t camunda-community/loader .
 ```
 ### To run Demo environment locally clone this repo and issue the following commands:
 ```shell
-$ git clone https://github.com/camunda-consulting/camunda-demo-starter.git 
+$ https://github.com/camunda-consulting/camunda-platform-8-demo-starter.git 
 ```
 ```shell
 $ docker login registry.camunda.cloud
